@@ -10,4 +10,5 @@ export const API_ENDPOINTS = {
   DELETE_USER: (userId: string) => `${API_BASE_URL}/users/${userId}`,
   HEARTBEAT: (userId: string) => `${API_BASE_URL}/users/${userId}/heartbeat`,
   USER_EXISTS: (userId: string) => `${API_BASE_URL}/users/${userId}/exists`,
+  CUSTOM_ID: (id: string) => `${API_BASE_URL}/custom-id/${id}`,
 } as const;

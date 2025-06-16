@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import {
   generateRandomId,
+  createCustomId,
   isValidId,
   isIdAvailable,
   saveUser,
@@ -72,6 +73,8 @@ export const Home: React.FC<HomeProps> = ({ onUserCreated }) => {
         setError("This ID is already taken. Please choose another one.");
         return;
       }
+      console.log("ID is available:", customId);
+      await createCustomId(customId);
 
       const user: User = {
         id: customId,

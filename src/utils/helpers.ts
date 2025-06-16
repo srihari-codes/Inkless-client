@@ -189,3 +189,25 @@ export const clearUserData = (): void => {
     console.error("Error clearing local data:", error);
   }
 };
+
+export const createCustomId = async (id: string): Promise<boolean> => {
+  console.log("Setting custom ID:", id);
+  try {
+    const response = await fetch(API_ENDPOINTS.CUSTOM_ID(id), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to set custom ID");
+    }
+
+    const result = await response.json();
+    return result.success;
+  } catch (error) {
+    console.error("Error setting custom ID:", error);
+    return false;
+  }
+};

@@ -1,5 +1,3 @@
-// ===== STEP 4: Advanced cleanup hook (src/hooks/useAdvancedCleanup.ts) =====
-
 import { useEffect, useRef, useCallback } from "react";
 import { User } from "../types";
 import {
@@ -8,6 +6,7 @@ import {
   sendHeartbeat,
   checkUserExists,
 } from "../utils/helpers";
+import { API_ENDPOINTS } from "../config/constants";
 
 interface UseAdvancedCleanupOptions {
   idleTimeoutMs?: number; // Default 10 minutes
@@ -187,7 +186,7 @@ export const useAdvancedCleanup = (
         // Use sendBeacon for reliable cleanup during page unload
         try {
           const success = navigator.sendBeacon(
-            `http://localhost:3000/api/users/${userId}`,
+            API_ENDPOINTS.DELETE_USER(userId),
             JSON.stringify({ immediate: true })
           );
 

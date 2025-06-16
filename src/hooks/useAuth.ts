@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { User } from '../types';
-import { getCurrentUser } from '../utils/helpers';
+import { useState, useEffect } from "react";
+import { User } from "../types";
+import { getCurrentUser } from "../utils/helpers";
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -13,7 +13,7 @@ export const useAuth = () => {
   }, []);
 
   const logout = () => {
-    localStorage.removeItem('anonymous_messaging_current_user');
+    sessionStorage.removeItem("anonymous_messaging_current_user");
     setUser(null);
   };
 

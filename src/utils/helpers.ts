@@ -1,5 +1,5 @@
 import { User, Message } from "../types";
-import { STORAGE_KEYS, ID_LENGTH } from "./constants";
+import { STORAGE_KEYS } from "./constants";
 import { API_ENDPOINTS } from "../config/constants";
 
 export const generateRandomId = async (): Promise<string> => {
@@ -65,11 +65,6 @@ export const getCurrentUser = (): User | null => {
   return user ? JSON.parse(user) : null;
 };
 
-export const getAllMessages = (): Message[] => {
-  const messages = localStorage.getItem(STORAGE_KEYS.ALL_MESSAGES);
-  return messages ? JSON.parse(messages) : [];
-};
-
 export const sendMessage = async (message: Message): Promise<void> => {
   try {
     const response = await fetch(API_ENDPOINTS.SEND_MESSAGE, {
@@ -92,11 +87,6 @@ export const sendMessage = async (message: Message): Promise<void> => {
     console.error("Error sending message:", error);
     throw error;
   }
-};
-
-export const getMessagesForUser = (userId: string): Message[] => {
-  const messages = getAllMessages();
-  return messages.filter((message) => message.recipientId === userId);
 };
 
 export const formatTimestamp = (timestamp: string): string => {

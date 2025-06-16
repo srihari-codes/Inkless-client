@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Send, User } from "lucide-react";
+import { Send } from "lucide-react";
 import { isValidId, isIdAvailable, sendMessage } from "../../utils/helpers";
 import { Message } from "../../types";
 import { Button } from "../UI/Button";
@@ -74,7 +74,6 @@ export const SendMessage: React.FC<SendMessageProps> = ({
 
       setSuccess(`Message sent to ${recipientId}!`);
       setMessageContent("");
-      setRecipientId("");
 
       if (onMessageSent) {
         onMessageSent();

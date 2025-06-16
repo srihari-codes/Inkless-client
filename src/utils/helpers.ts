@@ -123,3 +123,79 @@ export const formatTimestamp = (timestamp: string): string => {
     });
   }
 };
+export const deleteUser = async (userId: string): Promise<void> => {
+  try {
+    const response = await fetch(API_ENDPOINTS.DELETE_USER(userId), {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete user");
+    }
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.error || "Failed to delete user");
+    }
+
+    console.log(`User ${userId} deleted successfully`);
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    // Don't throw error here as this is cleanup
+  }
+};
+
+export const sendHeartbeat = async (userId: string): Promise<boolean> => {
+  try {
+    const response = await fetch(API_ENDPOINTS.HEARTBEAT(userId), {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const result = await response.json();
+    return result.success;
+  } catch (error) {
+    console.error("Error sending heartbeat:", error);
+    return false;
+  }
+};
+
+export const checkUserExists = async (userId: string): Promise<boolean> => {
+  try {
+    const response = await fetch(API_ENDPOINTS.USER_EXISTS(userId), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const result = await response.json();
+    return result.data.exists;
+  } catch (error) {
+    console.error("Error checking user existence:", error);
+    return false;
+  }
+};
+
+export const clearUserData = (): void => {
+  try {
+    sessionStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    localStorage.removeItem(STORAGE_KEYS.ALL_MESSAGES);
+    console.log("Local user data cleared");
+  } catch (error) {
+    console.error("Error clearing local data:", error);
+  }
+};

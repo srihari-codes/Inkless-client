@@ -1,18 +1,42 @@
-import React from 'react';
-import { useAuth } from './hooks/useAuth';
-import { Home } from './components/Home/Home';
-import { Dashboard } from './components/Dashboard/Dashboard';
-import { User } from './types';
+import React, { useState, useCallback } from "react";
+import { useAuth } from "./hooks/useAuth";
+import { useAdvancedCleanup } from "./hooks/useAdvancedCleanup";
+import { Home } from "./components/Home/Home";
+import { Dashboard } from "./components/Dashboard/Dashboard";
+import { User } from "./types";
 
 function App() {
   const { user, setUser, loading, logout } = useAuth();
+  const [forceReload, setForceReload] = useState(0);
+
+  // Handle user deletion from server
+  const handleUserDeleted = useCallback(() => {
+    console.log("User was deleted, forcing reload to get new ID");
+    // Clear user state and force component re-render
+    setUser(null);
+    setForceReload((prev) => prev + 1);
+  }, [setUser]);
+
+  const { performCleanup, updateActivity } = useAdvancedCleanup(user, {
+    idleTimeoutMs: 10 * 60 * 1000, // 10 minutes
+    heartbeatIntervalMs: 30 * 1000, // 30 seconds
+    tabSwitchGraceMs: 30 * 1000, // 30 seconds grace period
+    onUserDeleted: handleUserDeleted,
+  });
 
   const handleUserCreated = (newUser: User) => {
     setUser(newUser);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Perform cleanup before logout
+    await performCleanup("manual_logout");
     logout();
+  };
+
+  // Handle user activity to reset idle timer
+  const handleActivity = () => {
+    updateActivity();
   };
 
   if (loading) {
@@ -27,13 +51,13 @@ function App() {
   }
 
   return (
-    <>
+    <div key={forceReload} onClick={handleActivity} onKeyDown={handleActivity}>
       {user ? (
         <Dashboard user={user} onLogout={handleLogout} />
       ) : (
         <Home onUserCreated={handleUserCreated} />
       )}
-    </>
+    </div>
   );
 }
 

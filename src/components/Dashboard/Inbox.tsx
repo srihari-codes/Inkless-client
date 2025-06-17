@@ -1,9 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import { Inbox as InboxIcon, MessageSquare, RefreshCw } from "lucide-react";
 import { loadMessages } from "../../hooks/useMessages";
 import { formatTimestamp } from "../../utils/helpers";
 import { Button } from "../UI/Button";
 import { Card } from "../UI/Card";
+
+const avatarEmojis = [
+  "✨",
+  "🌟",
+  "💫",
+  "⭐",
+  "🌙",
+  "🍀",
+  "🎯",
+  "💎",
+  "🎪",
+  "🎭",
+  "🎨",
+  "🎬",
+  "🎮",
+  "🎧",
+  "🎵",
+];
 
 interface InboxProps {
   userId: string;
@@ -11,6 +29,13 @@ interface InboxProps {
 
 export const Inbox: React.FC<InboxProps> = ({ userId }) => {
   const { messages, refreshMessages, loading } = loadMessages(userId);
+  const [isSpinning, setIsSpinning] = useState(false);
+
+  const handleRefresh = () => {
+    setIsSpinning(true);
+    refreshMessages();
+    setTimeout(() => setIsSpinning(false), 1000);
+  };
 
   return (
     <Card className="p-6 h-fit">
@@ -27,11 +52,13 @@ export const Inbox: React.FC<InboxProps> = ({ userId }) => {
         <Button
           variant="outline"
           size="sm"
-          onClick={refreshMessages}
-          disabled={loading}
+          onClick={handleRefresh}
+          disabled={loading || isSpinning}
         >
           <RefreshCw
-            className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+            className={`h-4 w-4 mr-2 transition-all duration-300 ${
+              isSpinning ? "animate-spin" : ""
+            }`}
           />
           Refresh
         </Button>
@@ -62,8 +89,12 @@ export const Inbox: React.FC<InboxProps> = ({ userId }) => {
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
-                  <div className="bg-blue-500 text-white text-xs font-bold w-8 h-8 rounded-full flex items-center justify-center">
-                    {message.senderIdDisplay.slice(-2)}
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                    {
+                      avatarEmojis[
+                        Math.floor(Math.random() * avatarEmojis.length)
+                      ]
+                    }
                   </div>
                   <span className="font-mono text-sm font-medium text-gray-600">
                     From: {message.senderIdDisplay}
@@ -87,7 +118,7 @@ export const Inbox: React.FC<InboxProps> = ({ userId }) => {
       {messages.length > 0 && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <p className="text-xs text-gray-500 text-center">
-            Messages are stored locally on your device
+            Messages are retrieved and deleted from the database
           </p>
         </div>
       )}

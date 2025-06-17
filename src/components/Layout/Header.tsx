@@ -1,6 +1,6 @@
-import React from 'react';
-import { LogOut, MessageCircle } from 'lucide-react';
-import { Button } from '../UI/Button';
+import React from "react";
+import { LogOut, MessageCircle } from "lucide-react";
+import { Button } from "../UI/Button";
 
 interface HeaderProps {
   userId?: string;
@@ -17,17 +17,19 @@ export const Header: React.FC<HeaderProps> = ({ userId, onLogout }) => {
               <MessageCircle className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Anonymous Messages
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                TempSix
               </h1>
             </div>
           </div>
-          
+
           {userId && (
             <div className="flex items-center space-x-4">
               <div className="bg-gradient-to-r from-blue-100 to-purple-100 px-4 py-2 rounded-xl">
                 <span className="text-sm font-medium text-gray-700">ID: </span>
-                <span className="font-mono font-bold text-blue-600">{userId}</span>
+                <span className="font-mono font-bold text-blue-600">
+                  {userId}
+                </span>
               </div>
               {onLogout && (
                 <Button variant="outline" size="sm" onClick={onLogout}>

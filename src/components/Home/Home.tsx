@@ -16,8 +16,9 @@ import {
 } from "../../utils/helpers";
 import { User } from "../../types";
 import { Button } from "../UI/Button";
-import { Input } from "../UI/Input";
+import { DigitInput } from "../UI/DigitInput";
 import { Card } from "../UI/Card";
+import { Footer } from "../Layout/Footer";
 
 interface HomeProps {
   onUserCreated: (user: User) => void;
@@ -100,12 +101,13 @@ export const Home: React.FC<HomeProps> = ({ onUserCreated }) => {
               <MessageCircle className="h-12 w-12 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            Anonymous Messages
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 pb-3">
+            TempSix
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-            Send and receive anonymous messages using simple 6-digit IDs. No
-            sign-up required, completely private.
+            Send and receive anonymous messages using simple 6-digit IDs.
+            <br />
+            No sign-up required, completely private.
           </p>
 
           {/* Features */}
@@ -178,20 +180,17 @@ export const Home: React.FC<HomeProps> = ({ onUserCreated }) => {
               </p>
 
               <div className="space-y-4">
-                <Input
-                  placeholder="Enter 6-digit ID (e.g., 123456)"
+                <DigitInput
                   value={customId}
                   onChange={setCustomId}
-                  maxLength={6}
                   error={error}
-                  type="number"
                 />
                 <Button
                   onClick={handleCustomId}
-                  disabled={loading || !customId.trim()}
+                  disabled={loading || customId.length !== 6}
                   size="lg"
                   className="w-full"
-                  variant="secondary"
+                  variant={customId.length === 6 ? "primary" : "secondary"}
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
@@ -200,7 +199,7 @@ export const Home: React.FC<HomeProps> = ({ onUserCreated }) => {
                     </div>
                   ) : (
                     <>
-                      Check & Create ID
+                      Create Custom ID
                       <ArrowRight className="h-5 w-5 ml-2" />
                     </>
                   )}
@@ -246,6 +245,7 @@ export const Home: React.FC<HomeProps> = ({ onUserCreated }) => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

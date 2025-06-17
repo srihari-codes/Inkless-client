@@ -3,9 +3,9 @@ import { Send } from "lucide-react";
 import { isValidId, isIdAvailable, sendMessage } from "../../utils/helpers";
 import { Message } from "../../types";
 import { Button } from "../UI/Button";
-import { Input } from "../UI/Input";
 import { Card } from "../UI/Card";
 import { MAX_MESSAGE_LENGTH } from "../../utils/constants";
+import { SingleDigitInput } from "../UI/SingleDigitInput";
 
 interface SendMessageProps {
   currentUserId: string;
@@ -91,8 +91,18 @@ export const SendMessage: React.FC<SendMessageProps> = ({
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && e.ctrlKey) {
+    // Changed from checking Ctrl+Enter to just Enter
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault(); // Prevent default to avoid new line in textarea
       handleSendMessage();
+    }
+  };
+
+  const handleRecipientChange = (value: string) => {
+    setRecipientId(value);
+    // Reset error if it was "Recipient ID does not exist"
+    if (error === "Recipient ID does not exist") {
+      setError("");
     }
   };
 
@@ -106,13 +116,11 @@ export const SendMessage: React.FC<SendMessageProps> = ({
       </div>
 
       <div className="space-y-4">
-        <Input
+        <SingleDigitInput
           label="Recipient ID"
-          placeholder="Enter 6-digit ID"
           value={recipientId}
-          onChange={setRecipientId}
-          maxLength={6}
-          type="number"
+          onChange={handleRecipientChange} // Changed from setRecipientId to handleRecipientChange
+          isInvalid={error === "Recipient ID does not exist"}
         />
 
         <div>
@@ -122,7 +130,7 @@ export const SendMessage: React.FC<SendMessageProps> = ({
           <textarea
             value={messageContent}
             onChange={(e) => setMessageContent(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress} // Changed from onKeyPress to onKeyDown
             placeholder="Type your anonymous message here..."
             maxLength={MAX_MESSAGE_LENGTH}
             rows={6}
@@ -130,7 +138,7 @@ export const SendMessage: React.FC<SendMessageProps> = ({
           />
           <div className="flex justify-between items-center mt-2">
             <p className="text-xs text-gray-500">
-              Tip: Press Ctrl+Enter to send quickly
+              Tip: Press "Enter" to send quickly
             </p>
             <p className="text-xs text-gray-500">
               {messageContent.length}/{MAX_MESSAGE_LENGTH}
@@ -152,7 +160,11 @@ export const SendMessage: React.FC<SendMessageProps> = ({
 
         <Button
           onClick={handleSendMessage}
-          disabled={loading || !recipientId.trim() || !messageContent.trim()}
+          disabled={
+            loading ||
+            recipientId.length !== 6 || // Changed condition here
+            !messageContent.trim()
+          }
           className="w-full"
           size="lg"
         >

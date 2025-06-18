@@ -51,7 +51,7 @@ export const isIdAvailable = async (id: string): Promise<boolean> => {
 
 export const saveUser = async (user: User): Promise<void> => {
   try {
-    // Only store current user in session storage instead of localStorage
+    // Use sessionStorage consistently for temporary sessions
     sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
   } catch (error) {
     console.error("Error saving user:", error);
@@ -60,9 +60,14 @@ export const saveUser = async (user: User): Promise<void> => {
 };
 
 export const getCurrentUser = (): User | null => {
-  // Change from localStorage to sessionStorage
-  const user = sessionStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-  return user ? JSON.parse(user) : null;
+  try {
+    // Use sessionStorage consistently
+    const user = sessionStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+    return user ? JSON.parse(user) : null;
+  } catch (error) {
+    console.error("Error getting current user:", error);
+    return null;
+  }
 };
 
 export const sendMessage = async (message: Message): Promise<void> => {
@@ -113,28 +118,38 @@ export const formatTimestamp = (timestamp: string): string => {
     });
   }
 };
-export const deleteUser = async (userId: string): Promise<void> => {
+export const deleteUser = async (
+  userId: string,
+  immediate: boolean = false
+): Promise<void> => {
   try {
     const response = await fetch(API_ENDPOINTS.DELETE_USER(userId), {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        immediate,
+        timestamp: Date.now(),
+        userAgent: navigator.userAgent.substring(0, 100), // For debugging
+      }),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to delete user");
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
     const result = await response.json();
     if (!result.success) {
-      throw new Error(result.error || "Failed to delete user");
+      throw new Error(
+        result.error || result.message || "Failed to delete user"
+      );
     }
 
-    console.log(`User ${userId} deleted successfully`);
+    console.log(`✅ User ${userId} deleted successfully`, result.data);
   } catch (error) {
-    console.error("Error deleting user:", error);
-    // Don't throw error here as this is cleanup
+    console.error("❌ Error deleting user:", error);
+    throw error; // Re-throw so cleanup can handle retries
   }
 };
 
@@ -182,11 +197,20 @@ export const checkUserExists = async (userId: string): Promise<boolean> => {
 
 export const clearUserData = (): void => {
   try {
+    // Clear both session and local storage for cleanup
     sessionStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-    localStorage.removeItem(STORAGE_KEYS.ALL_MESSAGES);
-    console.log("Local user data cleared");
+    sessionStorage.removeItem(STORAGE_KEYS.ALL_MESSAGES);
+
+    // Also clear any localStorage items related to the current user
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      localStorage.removeItem(`tab-count-${currentUser.id}`);
+      localStorage.removeItem(`cleanup-lock-${currentUser.id}`);
+    }
+
+    console.log("✅ User data cleared from both storages");
   } catch (error) {
-    console.error("Error clearing local data:", error);
+    console.error("Error clearing user data:", error);
   }
 };
 
@@ -210,4 +234,19 @@ export const createCustomId = async (id: string): Promise<boolean> => {
     console.error("Error setting custom ID:", error);
     return false;
   }
+};
+
+export const getBrowserCapabilities = () => {
+  return {
+    hasBeacon: typeof navigator !== "undefined" && "sendBeacon" in navigator,
+    hasKeepAlive: typeof fetch !== "undefined",
+    hasLocalStorage: typeof localStorage !== "undefined",
+    hasSessionStorage: typeof sessionStorage !== "undefined",
+    isMobile: /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    ),
+    isStandalone:
+      window.matchMedia &&
+      window.matchMedia("(display-mode: standalone)").matches,
+  };
 };

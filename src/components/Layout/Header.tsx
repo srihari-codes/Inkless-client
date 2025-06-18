@@ -4,10 +4,20 @@ import { Button } from "../UI/Button";
 
 interface HeaderProps {
   userId?: string;
-  onLogout?: () => void;
+  onLogout?: () => Promise<void>; // Updated to handle async operation
 }
 
 export const Header: React.FC<HeaderProps> = ({ userId, onLogout }) => {
+  const handleExit = async () => {
+    if (onLogout) {
+      try {
+        await onLogout();
+      } catch (error) {
+        console.error("❌ Error during logout:", error);
+      }
+    }
+  };
+
   return (
     <header className="bg-white/80 backdrop-blur-lg border-b border-white/20 sticky top-0 z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -32,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({ userId, onLogout }) => {
                 </span>
               </div>
               {onLogout && (
-                <Button variant="outline" size="sm" onClick={onLogout}>
+                <Button variant="outline" size="sm" onClick={handleExit}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Exit
                 </Button>

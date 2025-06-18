@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { useAdvancedCleanup } from "./hooks/useAdvancedCleanup";
 import { Home } from "./components/Home/Home";
@@ -11,27 +11,53 @@ function App() {
 
   // Handle user deletion from server
   const handleUserDeleted = useCallback(() => {
-    console.log("User was deleted, forcing reload to get new ID");
-    // Clear user state and force component re-render
+    console.log("🧹 User cleanup completed");
     setUser(null);
     setForceReload((prev) => prev + 1);
   }, [setUser]);
 
-  const { performCleanup, updateActivity } = useAdvancedCleanup(user, {
-    idleTimeoutMs: 10 * 60 * 1000, // 10 minutes
-    heartbeatIntervalMs: 30 * 1000, // 30 seconds
-    tabSwitchGraceMs: 30 * 1000, // 30 seconds grace period
+  // Enhanced usage of useAdvancedCleanup
+  const {
+    performCleanup,
+    performCleanupWithRetry,
+    updateActivity,
+    isIdle,
+    getTabCount,
+    forceCleanup,
+  } = useAdvancedCleanup(user, {
+    idleTimeoutMs: 15 * 60 * 1000, // 15 minutes
+    heartbeatIntervalMs: 5 * 60 * 1000, // 5 minutes
+    tabSwitchGraceMs: 5 * 60 * 1000, // 5 minutes
+    enableMultiTabCoordination: true,
+    maxRetries: 3,
     onUserDeleted: handleUserDeleted,
   });
+
+  // Debug information in development environment
+  useEffect(() => {
+    if (import.meta.env.MODE === "development" && user) {
+      const interval = setInterval(() => {
+        console.log(`📊 Debug - Tabs: ${getTabCount()}, Idle: ${isIdle()}`);
+      }, 10000);
+
+      return () => clearInterval(interval);
+    }
+  }, [user, getTabCount, isIdle]);
 
   const handleUserCreated = (newUser: User) => {
     setUser(newUser);
   };
 
   const handleLogout = async () => {
-    // Perform cleanup before logout
-    await performCleanup("manual_logout");
-    logout();
+    try {
+      // This will trigger user deletion with retry mechanism
+      await performCleanupWithRetry("manual_exit", 3);
+      // Then clear the user state
+      setUser(null);
+    } catch (error) {
+      console.error("Failed to cleanup user:", error);
+      // You might want to show an error message to the user here
+    }
   };
 
   // Handle user activity to reset idle timer

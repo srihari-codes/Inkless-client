@@ -1,4 +1,4 @@
-export const API_BASE_URL = "http://192.168.210.176:3000/api";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const API_ENDPOINTS = {
   GENERATE_ID: `${API_BASE_URL}/generate-id`,
